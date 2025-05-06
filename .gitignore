@@ -1,0 +1,19 @@
+# --- FRONTEND (Expo - my-app) ---
+front/my-app/node_modules/
+front/my-app/.expo/
+front/my-app/.vscode/
+front/my-app/app-example/
+front/my-app/dist/
+front/my-app/web-build/
+front/my-app/expo-env.d.ts
+front/my-app/.env*
+front/my-app/npm-debug.*
+front/my-app/yarn-debug.*
+front/my-app/yarn-error.*
+front/my-app/*.tsbuildinfo
+front/my-app/.DS_Store
+front/my-app/*.pem
+
+# --- BACKEND ---
+backend/node_modules/
+backend/.env
