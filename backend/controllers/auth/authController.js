@@ -52,35 +52,13 @@ const status = (req, res) => {
   }
 };
 
-const verifyEmail = async (req, res) => {
-  const { token } = req.params;
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findOne({ where: { email: decoded.email } });
 
-    if (!user) {
-      return res.status(404).json({ msg: 'Usuario no encontrado' });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ msg: 'La cuenta ya está verificada' });
-    }
-
-    user.isVerified = true;
-    user.verificationToken = null;
-    await user.save();
-
-    return res.status(200).json({ msg: 'Cuenta verificada exitosamente' });
-  } catch (err) {
-    return res.status(400).json({ msg: 'Token no válido o expirado' });
-  }
-};
 
 export default {
   login,
   logout,
   status,
-  verifyEmail
+  
 };

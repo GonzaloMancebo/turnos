@@ -13,7 +13,6 @@ const router = express.Router();
 router.post('/login', validateLogin, handleValidation, authController.login);
 router.get('/logout', authController.logout);
 router.get('/status', authController.status);
-router.get('/verify/:token', authController.verifyEmail);
 
 // Register
 router.post('/register', validateRegister, handleValidation, registerController.register);
@@ -25,7 +24,6 @@ router.delete('/perfil', isAuthenticated, userController.deleteUser); // Elimina
 
 
 // Email test
-router.post('/test/verification-email', testController.testSendVerificationEmail);
 router.post('/test/welcome-email', testController.testSendWelcomeEmail);
 router.post('/test/reset-password-email', testController.testSendPasswordResetEmail);
 

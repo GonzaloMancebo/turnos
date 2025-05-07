@@ -1,50 +1,75 @@
-# Welcome to your Expo app 👋
+📱 Aplicación de Gestión de Clases - Pilates Studio
+Este repositorio contiene la aplicación móvil para el Pilates Studio. La app está diseñada para facilitar la inscripción, gestión y seguimiento de clases de pilates de manera sencilla y eficiente. Los usuarios pueden consultar novedades, explorar el calendario de clases, gestionar su historial de inscripciones y administrar su perfil personal.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+🧭 Flujo de la Aplicación
+La aplicación está estructurada en cuatro tabs principales, cada uno orientado a una funcionalidad específica:
 
-## Get started
+🏠 1. Inicio (Home)
+Pantalla principal con anuncios del estudio, novedades y avisos importantes como feriados, clases especiales o cambios de horario.
 
-1. Install dependencies
+Contenido típico:
 
-   ```bash
-   npm install
-   ```
+Mensajes del staff (ej: “El estudio permanecerá cerrado el lunes”).
 
-2. Start the app
+Comunicaciones sobre promociones o eventos.
 
-   ```bash
-   npx expo start
-   ```
+Indicadores de estado: abierto/cerrado.
 
-In the output, you'll find options to open the app in a
+📅 2. Calendario
+Calendario interactivo que permite seleccionar un día y ver las clases disponibles para esa fecha.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Funcionalidades:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Visualización diaria o semanal.
 
-## Get a fresh project
+Al seleccionar un día, se muestra un modal con:
 
-When you're ready, run:
+Lista de clases disponibles.
 
-```bash
-npm run reset-project
-```
+Cantidad de cupos restantes.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Botón para reservar clase.
 
-## Learn more
+Prevención de inscripciones duplicadas.
 
-To learn more about developing your project with Expo, look at the following resources:
+Actualización en tiempo real de los cupos.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+📋 3. Clases (Mis Clases)
+Historial completo de clases del usuario.
 
-## Join the community
+Incluye:
 
-Join our community of developers creating universal apps.
+Lista de clases futuras reservadas con opción de cancelar.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Historial de clases pasadas.
+
+Detalles: fecha, hora, estado (asistida/cancelada).
+
+👤 4. Perfil
+Gestión de datos personales del usuario.
+
+Opciones:
+
+Ver y editar nombre, email y demás datos.
+
+Activar/desactivar notificaciones push.
+
+Consultar historial personal de asistencia.
+
+⚙️ Características Adicionales
+✅ Inscripción y Cancelación
+Reservas disponibles desde el calendario o historial.
+
+Validación de cupos y prevenciones de doble inscripción.
+
+Actualización instantánea del estado de cada clase.
+
+🔔 Notificaciones Push
+Recordatorios de clases próximas.
+
+Avisos de cancelación o cambios.
+
+🧠 Interactividad
+Feedback visual mediante toasts (mensajes de éxito/error).
+
+Animaciones suaves para destacar disponibilidad o urgencias (últimos cupos).

@@ -1,25 +1,11 @@
 import emailService from '../../services/emailService.js'; 
 import crypto from 'crypto';
 
-// Función para enviar el correo de verificación a un email específico (para probar la plantilla)
-const testSendVerificationEmail = async (req, res) => {
-  const nombre = 'Administrador'; 
-  const email = 'mancebo.gonzalo27@gmail.com';  
-    const verificationToken = crypto.randomBytes(32).toString('hex'); // Genera un token aleatorio para la verificación
-
-  const enviado = await emailService.sendVerificationEmail(nombre, email, verificationToken);
-
-  if (enviado) {
-    return res.json({ msg: 'Correo de verificación enviado a ' + email });
-  } else {
-    return res.status(500).json({ msg: 'Hubo un error al enviar el correo' });
-  }
-};
 
 // Función similar para probar el correo de bienvenida
 const testSendWelcomeEmail = async (req, res) => {
-    const nombre = 'Pol Fernandez'; 
-    const email = 'paulfernandez4444@gmail.com';  
+    const nombre = 'Pedri'; 
+    const email = 'mancebo.gonzalo27@gmail.com';  
   
   const enviado = await emailService.sendWelcomeEmail(nombre, email);
 
@@ -45,4 +31,4 @@ const testSendPasswordResetEmail = async (req, res) => {
   }
 };
 
-export default { testSendVerificationEmail, testSendWelcomeEmail, testSendPasswordResetEmail };
+export default {  testSendWelcomeEmail, testSendPasswordResetEmail };

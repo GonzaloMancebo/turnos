@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import getVerificationEmailHTML from '../templates/verificationEmailTemplate.js';
 import getWelcomeEmailHTML from '../templates/welcomeTemplate.js';
 import getPasswordResetEmailHTML from '../templates/passwordResetTemplate.js';
 
@@ -11,53 +10,32 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const sendVerificationEmail = async (nombre, email, verificationToken) => {
-  // Asegúrate de que BASE_URL esté configurado correctamente en tu .env
-  const verificationLink = `${process.env.BASE_URL}/auth/verify/${verificationToken}`;
-  const html = getVerificationEmailHTML(nombre, verificationLink);
-
-  const mailOptions = {
-    from: '"Ecommerce Int" <no-reply@ecommerce-int.com>',
-    to: email,
-    subject: 'Verificá tu cuenta',
-    html
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email de verificación enviado');
-    return true;
-  } catch (error) {
-    console.error('❌ Error al enviar email de verificación:', error);
-    return false;
-  }
-};
-
+// Función para enviar el correo de bienvenida
 const sendWelcomeEmail = async (nombre, email) => {
-  const html = getWelcomeEmailHTML(nombre);
-
   const mailOptions = {
-    from: '"Ecommerce Int" <no-reply@ecommerce-int.com>',
+    from: `"Pilates Studio" <${process.env.EMAIL_USER}>`,  
     to: email,
-    subject: '¡Bienvenido a Ecommerce Int!',
-    html
+    subject: '¡Bienvenido a Pilates Studio!',
+    html: getWelcomeEmailHTML(nombre),  // Utiliza el HTML del correo de bienvenida
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('✅ Email de bienvenida enviado');
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Correo de bienvenida enviado:', info.response);
     return true;
-  } catch (error) {
-    console.error('❌ Error al enviar email de bienvenida:', error);
+  } catch (err) {
+    console.error('Error enviando el correo:', err);
     return false;
   }
 };
 
+// Función para enviar el correo de restablecimiento de contraseña
 const sendPasswordResetEmail = async (nombre, email, token) => {
+  // Usamos una URL para el restablecimiento de contraseña
   const html = getPasswordResetEmailHTML(nombre, `http://localhost:3000/auth/reset-password/${token}`);
 
   const mailOptions = {
-    from: '"Ecommerce Int" <no-reply@ecommerce-int.com>',
+    from: '"Pilates Studio" <no-reply@pilatesstudio.com>',  // Actualizamos el remitente a Pilates Studio
     to: email,
     subject: 'Restablecé tu contraseña',
     html
@@ -74,7 +52,6 @@ const sendPasswordResetEmail = async (nombre, email, token) => {
 };
 
 export default {
-  sendVerificationEmail,
   sendWelcomeEmail,
   sendPasswordResetEmail
 };
