@@ -3,9 +3,9 @@ import session from 'express-session';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
-import productRoutes from './routes/product.js';
-import cartRoutes from './routes/cartRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
+import turnoRoutes from './routes/turnoRoutes.js';
+import clasesRoutes from './routes/claseRoutes.js';
+import   './models/associations.js';
 
 
 dotenv.config();
@@ -35,9 +35,9 @@ app.use(session({
 
 // Rutas
 app.use('/auth', authRoutes);
-app.use('/api', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api', turnoRoutes);
+app.use('/api', clasesRoutes);
+
 
 
 

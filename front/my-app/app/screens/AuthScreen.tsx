@@ -88,7 +88,6 @@ export default function AuthScreen() {
 						setIsRegistering(false);
 					} else {
 						result = await authService.login(email, password);
-						console.log("Login exitoso:", result);
 						router.push("/(tabs)/home");
 					}
 				} catch (err: any) {
