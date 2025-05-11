@@ -1,189 +1,168 @@
 import React, { useState } from "react";
-import {
-	View,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	StatusBar,
-	Image,
-	ActivityIndicator,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StatusBar, Image, ActivityIndicator } from "react-native";
 import styles from "../../styles/AuthScreenStyles";
 import Colors from "../constants/Colors";
 import authService from "../services/auth/authService";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
+import { useUser } from "../components/UserContext";  // Usamos el contexto
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function AuthScreen() {
-	const [isRegistering, setIsRegistering] = useState(false);
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
-	const router = useRouter();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useUser();  // Usamos el contexto para actualizar el usuario
+  const router = useRouter();
 
-	const handleSubmit = async () => {
-		// Validación de campos vacíos
-		if (!email || !password || (isRegistering && !name)) {
-			Toast.show({
-				type: "error",
-				position: "top",
-				text1: "Campos incompletos",
-				text2: "Por favor completá todos los campos.",
-				visibilityTime: 3000,
-				autoHide: true,
-				topOffset: 50,
-			});
-			return;
-		}
+  const handleSubmit = async () => {
+    // Validación de campos vacíos
+    if (!email || !password || (isRegistering && !name)) {
+      Toast.show({
+        type: "error",
+        position: "top",
+        text1: "Campos incompletos",
+        text2: "Por favor completá todos los campos.",
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
+      return;
+    }
 
-		// Validación del correo
-		const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-		if (!emailRegex.test(email)) {
-			Toast.show({
-				type: "error",
-				position: "top",
-				text1: "Correo inválido",
-				text2: "El correo proporcionado no tiene un formato válido.",
-				visibilityTime: 3000,
-				autoHide: true,
-				topOffset: 50,
-			});
-			return;
-		}
+    // Validación del correo
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(email)) {
+      Toast.show({
+        type: "error",
+        position: "top",
+        text1: "Correo inválido",
+        text2: "El correo proporcionado no tiene un formato válido.",
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
+      return;
+    }
 
-		// Validación de la contraseña (mínimo 6 caracteres, puedes personalizarlo)
-		if (password.length < 6) {
-			Toast.show({
-				type: "error",
-				position: "top",
-				text1: "Contraseña demasiado corta",
-				text2: "La contraseña debe tener al menos 6 caracteres.",
-				visibilityTime: 3000,
-				autoHide: true,
-				topOffset: 50,
-			});
-			return;
-		}
+    // Validación de la contraseña (mínimo 6 caracteres)
+    if (password.length < 6) {
+      Toast.show({
+        type: "error",
+        position: "top",
+        text1: "Contraseña demasiado corta",
+        text2: "La contraseña debe tener al menos 6 caracteres.",
+        visibilityTime: 3000,
+        autoHide: true,
+        topOffset: 50,
+      });
+      return;
+    }
 
-		try {
-			setIsLoading(true); // Activar el indicador de carga
+    try {
+      setIsLoading(true); // Activar el indicador de carga
 
-			// Forzar un pequeño retraso antes de proceder
-			setTimeout(async () => {
-				try {
-					let result;
-					if (isRegistering) {
-						result = await authService.register(name, email, password);
-						console.log("Registro exitoso:", result);
-						Toast.show({
-							type: "success",
-							position: "top",
-							text1: "¡Registro exitoso!",
-							text2: "Te registraste correctamente. Inicia sesión.",
-							visibilityTime: 3000,
-							autoHide: true,
-							topOffset: 50,
-						});
-						setIsRegistering(false);
-					} else {
-						result = await authService.login(email, password);
-						router.push("/(tabs)/home");
-					}
-				} catch (err: any) {
-					const message =
-						err?.response?.data?.message ||
-						"Ocurrió un error. Intentá de nuevo.";
-					Toast.show({
-						type: "error",
-						position: "top",
-						text1: "Error en autenticación",
-						text2: message,
-						visibilityTime: 3000,
-						autoHide: true,
-						topOffset: 50,
-					});
-				} finally {
-					setIsLoading(false); // Desactivar el indicador de carga
-				}
-			}, 900); // Retraso mínimo de 500ms para que el indicador sea visible
-		} catch  {
-			setIsLoading(false); // En caso de error, también detener el indicador de carga
-		}
-	};
+      // Forzar un pequeño retraso antes de proceder
+      setTimeout(async () => {
+        try {
+          let result;
+          if (isRegistering) {
+            result = await authService.register(name, email, password);
+            Toast.show({
+              type: "success",
+              position: "top",
+              text1: "¡Registro exitoso!",
+              text2: "Te registraste correctamente. Inicia sesión.",
+              visibilityTime: 3000,
+              autoHide: true,
+              topOffset: 50,
+            });
+            setIsRegistering(false);
+          } else {
+            result = await authService.login(email, password);
+            // Almacenar el token JWT en AsyncStorage
+            await AsyncStorage.setItem('jwt_token', result.token);
+            console.log("Token guardado en AsyncStorage:", result.token);  // Verificar que el token se guardó
 
-	const toggleMode = () => {
-		setIsRegistering((prev) => !prev);
-		setName("");
-		setEmail("");
-		setPassword("");
-	};
+            // Actualizar el usuario en el contexto
+            setUser(result.token);
+            console.log("Usuario actualizado en el contexto:", result.token);  
 
-	return (
-		<View
-			style={[
-				styles.container,
-				{ justifyContent: "center", alignItems: "center" },
-			]}>
-			<StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-			<Image
-				source={require("../../assets/images/icon.png")}
-				style={styles.logoImageStyle}
-			/>
+            // Redirigir al home
+            router.push("/(tabs)/home");
+          }
+        } catch (err: any) {
+          const message =
+            err?.response?.data?.message ||
+            "Ocurrió un error. Intentá de nuevo.";
+          Toast.show({
+            type: "error",
+            position: "top",
+            text1: "Error en autenticación",
+            text2: message,
+            visibilityTime: 3000,
+            autoHide: true,
+            topOffset: 50,
+          });
+        } finally {
+          setIsLoading(false); // Desactivar el indicador de carga
+        }
+      }, 900); // Retraso mínimo de 500ms para que el indicador sea visible
+    } catch {
+      setIsLoading(false); // En caso de error, también detener el indicador de carga
+    }
+  };
 
-			{/* Formulario */}
-			{isRegistering && (
-				<TextInput
-					style={styles.input}
-					placeholder="Nombre"
-					placeholderTextColor={Colors.secondary}
-					value={name}
-					onChangeText={setName}
-				/>
-			)}
-			<TextInput
-				style={styles.input}
-				placeholder="Correo electrónico"
-				placeholderTextColor={Colors.secondary}
-				value={email}
-				onChangeText={setEmail}
-				keyboardType="email-address"
-				autoCapitalize="none"
-			/>
-			<TextInput
-				style={styles.input}
-				placeholder="Contraseña"
-				placeholderTextColor={Colors.secondary}
-				value={password}
-				secureTextEntry
-				onChangeText={setPassword}
-			/>
+  const toggleMode = () => {
+    setIsRegistering((prev) => !prev);
+    setName("");
+    setEmail("");
+    setPassword("");
+  };
 
-			{/* Botón con indicador de carga */}
-			<TouchableOpacity
-				style={styles.loginButton}
-				onPress={handleSubmit}
-				disabled={isLoading}>
-				{isLoading ? (
-					<ActivityIndicator size="small" color={Colors.white} />
-				) : (
-					<Text style={styles.loginButtonText}>
-						{isRegistering ? "Registrarse" : "Ingresar"}
-					</Text>
-				)}
-			</TouchableOpacity>
+  return (
+    <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <Image source={require("../../assets/images/icon.png")} style={styles.logoImageStyle} />
 
-			{/* Línea divisoria */}
-			<View style={styles.dividerStyle} />
+      {/* Formulario */}
+      {isRegistering && (
+        <TextInput style={styles.input} placeholder="Nombre" placeholderTextColor={Colors.secondary} value={name} onChangeText={setName} />
+      )}
+      <TextInput
+        style={styles.input}
+        placeholder="Correo electrónico"
+        placeholderTextColor={Colors.secondary}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Contraseña"
+        placeholderTextColor={Colors.secondary}
+        value={password}
+        secureTextEntry
+        onChangeText={setPassword}
+      />
 
-			{/* Switch de modo */}
-			<TouchableOpacity style={styles.signupStyle} onPress={toggleMode}>
-				<Text style={styles.signupTextStyle}>
-					{isRegistering
-						? "¿Ya tenés cuenta? Iniciá sesión"
-						: "¿No tenés cuenta? Registrate"}
-				</Text>
-			</TouchableOpacity>
-		</View>
-	);
+      {/* Botón con indicador de carga */}
+      <TouchableOpacity style={styles.loginButton} onPress={handleSubmit} disabled={isLoading}>
+        {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <Text style={styles.loginButtonText}>{isRegistering ? "Registrarse" : "Ingresar"}</Text>}
+      </TouchableOpacity>
+
+      {/* Línea divisoria */}
+      <View style={styles.dividerStyle} />
+
+      {/* Switch de modo */}
+      <TouchableOpacity style={styles.signupStyle} onPress={toggleMode}>
+        <Text style={styles.signupTextStyle}>
+          {isRegistering ? "¿Ya tenés cuenta? Iniciá sesión" : "¿No tenés cuenta? Registrate"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 }

@@ -5,6 +5,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import turnoRoutes from './routes/turnoRoutes.js';
 import clasesRoutes from './routes/claseRoutes.js';
+import reservaRoutes from './routes/reservaRoutes.js';
 import   './models/associations.js';
 
 
@@ -37,6 +38,8 @@ app.use(session({
 app.use('/auth', authRoutes);
 app.use('/api', turnoRoutes);
 app.use('/api', clasesRoutes);
+app.use('/api', reservaRoutes);
+
 
 
 

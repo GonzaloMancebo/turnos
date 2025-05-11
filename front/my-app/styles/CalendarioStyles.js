@@ -77,7 +77,6 @@ export default StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginBottom: 2,
-    textAlign: 'center',
   },
   row: {
     flexDirection: 'row',

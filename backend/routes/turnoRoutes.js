@@ -5,4 +5,5 @@ const router = express.Router();
 
 router.get('/turnos/:claseId', getTurnosPorFecha);
 
+
 export default router;

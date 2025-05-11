@@ -23,6 +23,12 @@ const Turno = sequelize.define('Turno', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+
+  ya_reservado: {
+  type: DataTypes.BOOLEAN,
+  allowNull: false,
+  defaultValue: false,
+},
   clase_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
