@@ -98,7 +98,37 @@ export const obtenerReservasPorUsuario = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: 'Error al obtener las reservas' });
   }
+
+  
 };
 
 
+export const eliminarReserva = async (req, res) => {
+  try {
+    const { turno_id } = req.params;
+    const usuario_id = req.user.id; // Lo obtenemos del middleware isAuthenticated
 
+    // Verificar si existe la reserva de ese usuario para ese turno
+    const reserva = await Reserva.findOne({
+      where: { usuario_id, turno_id }
+    });
+
+    if (!reserva) {
+      return res.status(404).json({ message: 'Reserva no encontrada' });
+    }
+
+    // Eliminar la reserva
+    await reserva.destroy();
+
+    // Actualizar el estado del turno (si aplica)
+    const turno = await Turno.findByPk(turno_id);
+    if (turno) {
+      await turno.update({ ya_reservado: false });
+    }
+
+    return res.status(200).json({ message: 'Reserva cancelada exitosamente' });
+  } catch (error) {
+    console.error('Error al cancelar la reserva:', error);
+    return res.status(500).json({ message: 'Error al cancelar la reserva' });
+  }
+};

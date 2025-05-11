@@ -25,7 +25,7 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="timelap"
+        name="clases"
         options={{
           title: "Mis Clases",
           headerShown: false,
