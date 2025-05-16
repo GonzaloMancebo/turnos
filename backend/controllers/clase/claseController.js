@@ -1,6 +1,5 @@
 import  Clase  from '../../models/clase/claseModel.js';
 import Turno from '../../models/turno/turnoModel.js';
-import sequelize from '../../db.js';
 
 export const getClasesPorDia = async (req, res) => {
   const { dia } = req.query;
@@ -9,9 +8,17 @@ export const getClasesPorDia = async (req, res) => {
     return res.status(400).json({ error: 'Parámetro "dia" requerido' });
   }
 
-  const diaLower = dia.toLowerCase();
+  function normalizeDay(str) {
+    return str
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
 
-  if (['sábado', 'sabado', 'domingo'].includes(diaLower)) {
+  const diaNormalized = normalizeDay(dia);
+
+  if (['sabado', 'domingo'].includes(diaNormalized)) {
     return res.status(200).json({ sin_clases: true, mensaje: 'No brindamos clases los fines de semana.' });
   }
 
@@ -19,7 +26,7 @@ export const getClasesPorDia = async (req, res) => {
     const clases = await Clase.findAll({
       where: {
         activo: true,
-        dia_semana: diaLower, // 👈 Aquí filtramos directamente por clase
+        dia_semana: diaNormalized, // filtro con día normalizado
       },
       include: [
         {
@@ -39,6 +46,7 @@ export const getClasesPorDia = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 
 
 export const getTodasClases = async (req, res) => {

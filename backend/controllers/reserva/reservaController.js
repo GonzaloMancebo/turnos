@@ -5,8 +5,8 @@ import User from '../../models/user/User.js';
 // Crear una nueva reserva
 export const crearReserva = async (req, res) => {
   try {
-const usuario_id = req.user.id; 
-const { turno_id, puntos_utilizados } = req.body;
+    const usuario_id = req.user.id; 
+    const { turno_id, puntos_utilizados } = req.body;
 
     // Verificar si el turno existe
     const turno = await Turno.findByPk(turno_id);
@@ -27,9 +27,14 @@ const { turno_id, puntos_utilizados } = req.body;
         turno_id,
       },
     });
-
     if (reservaExistente) {
       return res.status(400).json({ message: 'Ya tienes una reserva para este turno' });
+    }
+
+    // Verificar si hay cupos disponibles
+    const reservasRealizadas = await Reserva.count({ where: { turno_id } });
+    if (reservasRealizadas >= turno.cupo_maximo) {
+      return res.status(400).json({ message: 'No hay cupos disponibles para este turno' });
     }
 
     // Crear la reserva
@@ -38,43 +43,35 @@ const { turno_id, puntos_utilizados } = req.body;
       turno_id,
       puntos_utilizados,
       reservado_en: new Date(),
-      ya_reservado: true,  // Marcar como reservado al momento de crear la reserva
+      ya_reservado: true,
     });
 
-    // Actualizar el turno para reflejar que está reservado
-    await turno.update({
-      ya_reservado: true,  // Establecer que el turno ha sido reservado
-      cupo_maximo: turno.cupo_maximo - 1,  // Reducir el cupo disponible por 1
-    });
+    // No modificar cupo_maximo ni ya_reservado en Turno aquí
 
-    // Volver a obtener el turno después de la actualización
-    const updatedTurno = await Turno.findByPk(turno_id);
+    // Calcular cupos disponibles después de crear la reserva
+    const nuevasReservasRealizadas = reservasRealizadas + 1;
+    const cuposDisponibles = Math.max(turno.cupo_maximo - nuevasReservasRealizadas, 0);
 
-    // Volver a contar las reservas de este turno
-    const reservasRealizadas = await Reserva.count({
-      where: { turno_id },
-    });
-
-    // Calcular cupos disponibles con el valor actualizado
-    const cuposDisponibles = Math.max(updatedTurno.cupo_maximo, 0);
-
-    // Devolver la reserva junto con los datos de cupo
     return res.status(201).json({
       ...reserva.toJSON(),
-      reservas_realizadas: reservasRealizadas,
+      reservas_realizadas: nuevasReservasRealizadas,
       cupos_disponibles: cuposDisponibles,
-      ya_reservado: true,  // Se asegura de que el campo ya_reservado sea true al devolverlo
+      ya_reservado: true,
     });
+
   } catch (error) {
-    console.error(error);
+    console.error('Error en crearReserva:', error);
     return res.status(500).json({ message: 'Error al crear la reserva' });
   }
 };
 
+
 // Obtener todas las reservas de un usuario
 export const obtenerReservasPorUsuario = async (req, res) => {
   try {
-    const { usuario_id } = req.params;
+    const usuario_id = req.user.id; 
+
+    console.log('Obteniendo reservas para usuario:', usuario_id);
 
     // Verificar si el usuario existe
     const usuario = await User.findByPk(usuario_id);
@@ -91,40 +88,39 @@ export const obtenerReservasPorUsuario = async (req, res) => {
           as: 'turno',
         },
       ],
+      order: [
+        [{ model: Turno, as: 'turno' }, 'fecha', 'ASC'],
+        [{ model: Turno, as: 'turno' }, 'hora_inicio', 'ASC'],
+      ],
     });
+    console.log('Reservas obtenidas:', reservas);
 
     return res.status(200).json(reservas);
   } catch (error) {
-    console.error(error);
+    console.error('Error en obtenerReservasPorUsuario:', error);
     return res.status(500).json({ message: 'Error al obtener las reservas' });
   }
-
-  
 };
+
+
+
 
 
 export const eliminarReserva = async (req, res) => {
   try {
     const { turno_id } = req.params;
-    const usuario_id = req.user.id; // Lo obtenemos del middleware isAuthenticated
+    const usuario_id = req.user.id;
 
-    // Verificar si existe la reserva de ese usuario para ese turno
-    const reserva = await Reserva.findOne({
-      where: { usuario_id, turno_id }
-    });
-
+    // Buscar reserva
+    const reserva = await Reserva.findOne({ where: { usuario_id, turno_id } });
     if (!reserva) {
       return res.status(404).json({ message: 'Reserva no encontrada' });
     }
 
-    // Eliminar la reserva
+    // Eliminar reserva
     await reserva.destroy();
 
-    // Actualizar el estado del turno (si aplica)
-    const turno = await Turno.findByPk(turno_id);
-    if (turno) {
-      await turno.update({ ya_reservado: false });
-    }
+    // No modificar el turno (no tocar cupo_maximo ni ya_reservado)
 
     return res.status(200).json({ message: 'Reserva cancelada exitosamente' });
   } catch (error) {
@@ -132,3 +128,4 @@ export const eliminarReserva = async (req, res) => {
     return res.status(500).json({ message: 'Error al cancelar la reserva' });
   }
 };
+

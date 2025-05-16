@@ -72,6 +72,24 @@ const styles = StyleSheet.create({
     fontSize: 16,        
   },
 
+  sinReservasContainer: {
+  position: 'absolute',  // para que quede centrado encima del contenido
+  top: '50%',
+  left: 0,
+  right: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+  zIndex: 10,
+},
+
+sinReservasTexto: {
+  fontSize: 18,
+  color: '#666',
+  textAlign: 'center',
+},
+
+
 });
 
 export default styles;

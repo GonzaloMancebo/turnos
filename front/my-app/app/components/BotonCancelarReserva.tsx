@@ -7,22 +7,26 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { eliminarReserva } from "../services/reservas/reservaService";
+import { eliminarReserva as eliminarReservaAPI } from "../services/reservas/reservaService";
 import { useUser } from "../components/UserContext";
+import { useReserva } from "../components/ReservaContext";
 
 interface BotonCancelarReservaProps {
+  turnoId: number; // Cambié a turnoId para que coincida con el contexto
   reservaId: number;
   cuposDisponibles: number;
   onCancelacionExitosa?: (nuevosCupos: number) => void;
 }
 
 const BotonCancelarReserva: React.FC<BotonCancelarReservaProps> = ({
+  turnoId,
   reservaId,
   cuposDisponibles,
   onCancelacionExitosa,
 }) => {
   const [cargando, setCargando] = useState(false);
   const { token } = useUser();
+  const { eliminarReserva, actualizarCupos } = useReserva();
 
   const handleCancelar = async () => {
     if (!token) {
@@ -32,7 +36,12 @@ const BotonCancelarReserva: React.FC<BotonCancelarReservaProps> = ({
     setCargando(true);
     try {
       console.log("Cancelando reserva con ID:", reservaId);
-      await eliminarReserva(reservaId, token);
+      await eliminarReservaAPI(reservaId, token);
+
+      // Actualizar estado global eliminando reserva y aumentando cupos
+      eliminarReserva(turnoId);
+      actualizarCupos(turnoId, cuposDisponibles + 1);
+
       Alert.alert("Reserva cancelada");
       onCancelacionExitosa?.(cuposDisponibles + 1);
     } catch (error) {

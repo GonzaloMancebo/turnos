@@ -1,7 +1,7 @@
-import Clase from '../models/clase/claseModel.js';
-import Turno from '../models/turno/turnoModel.js';
-import Reserva from '../models/reserva/reservaModel.js';
-import User from '../models/user/User.js';
+import Clase from './clase/claseModel.js';
+import Turno from './turno/turnoModel.js';
+import Reserva from './reserva/reservaModel.js';
+import User from './user/User.js';
 
 // Asociaciones entre Clase y Turno
 Clase.hasMany(Turno, { foreignKey: 'clase_id' });

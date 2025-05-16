@@ -1,28 +1,29 @@
 import React, { useState } from "react";
 import { Alert, TouchableOpacity, Text, ActivityIndicator, View } from "react-native";
 import { generarReservas } from "../services/reservas/reservaService";
-import { useUser } from "../components/UserContext";  // Usamos el contexto para acceder al id
+import { useUser } from "../components/UserContext";
+import { useReserva } from "../components/ReservaContext"; 
 
 interface BotonReservaProps {
   turnoId: number;
   cuposDisponibles: number;
-  yaReservado: boolean;
+  usuarioYaReservo: boolean; // 👈 nuevo prop
   onReservaExitosa?: (nuevosCupos: number) => void;
 }
 
 const BotonReserva: React.FC<BotonReservaProps> = ({
   turnoId,
   cuposDisponibles,
-  yaReservado,
+  usuarioYaReservo,
   onReservaExitosa,
 }) => {
   const [cargando, setCargando] = useState(false);
-  const { id, email, token } = useUser();  // Aquí obtenemos el id, email y token desde el contexto
+
+  const { id, email, token } = useUser();
+  const { reservarTurno, actualizarCupos } = useReserva(); // no usamos estaReservado acá
 
   const handleReserva = async () => {
-    console.log("ID del usuario:", id);  // Verifica si el id está correcto
-    console.log("Email del usuario:", email);  // Verifica si el email está correcto
-    console.log("Token del usuario:", token);  // Verifica si el token está correcto
+    console.log("handleReserva iniciado", { id, email, token, turnoId, cuposDisponibles });
 
     if (!id || !email || !token) {
       return Alert.alert("Error", "Usuario no autenticado.");
@@ -34,22 +35,24 @@ const BotonReserva: React.FC<BotonReservaProps> = ({
 
     setCargando(true);
     try {
-      const puntosUtilizados = 1; // Aquí defines que se van a usar 1 punto, puedes modificarlo según la lógica de tu aplicación
-      const { cupos_disponibles } = await generarReservas(
-        id,  // Usamos el id del usuario
-        turnoId,
-        puntosUtilizados,  // Aquí pasamos los puntos utilizados
-        token  // Enviamos el token para la autenticación
-      );
-      Alert.alert("Reserva exitosa");
+      const puntosUtilizados = 1;
+      const { cupos_disponibles } = await generarReservas(id, turnoId, puntosUtilizados, token);
+
+      console.log("Reserva API exitosa, actualizando context");
+      reservarTurno(turnoId);
+      actualizarCupos(turnoId, cupos_disponibles);
+
       onReservaExitosa?.(cupos_disponibles);
-    } catch  {
+      Alert.alert("Reserva exitosa");
+    } catch (error) {
+      console.log("Error en reserva:", error);
       Alert.alert("Error", "No se pudo realizar la reserva.");
+    } finally {
+      setCargando(false);
     }
-    setCargando(false);
   };
 
-  if (yaReservado) {
+  if (usuarioYaReservo) {
     return (
       <TouchableOpacity
         style={{

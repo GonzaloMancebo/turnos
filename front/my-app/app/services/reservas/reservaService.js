@@ -64,11 +64,10 @@ export const obtenerReservasPorUsuario = async (usuario_id, token) => {
     console.log('Obteniendo reservas para el usuario con ID:', usuario_id);
 
     // Asegúrate de enviar el token JWT si es necesario para la autenticación
-    const response = await api.get(`/api/reservas/usuario/${usuario_id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,  // Enviamos el token JWT
-      },
-    });
+    const response = await api.get(`/api/reservas/usuario`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
+
 
     // Verificamos si la respuesta es exitosa
     if (response.status !== 200) {

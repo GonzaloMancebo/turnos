@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/reservas', isAuthenticated, crearReserva); 
 
 // Ruta para obtener todas las reservas de un usuario
-router.get('/reservas/usuario/:usuario_id', isAuthenticated, obtenerReservasPorUsuario);
+router.get('/reservas/usuario', isAuthenticated, obtenerReservasPorUsuario);
 
 // Ruta para eliminar una reserva
 router.delete('/reservas/:turno_id', isAuthenticated, eliminarReserva);

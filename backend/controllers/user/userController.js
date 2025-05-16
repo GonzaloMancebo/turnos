@@ -1,9 +1,10 @@
-import User  from '../../models/user/User.js';  
+import User from '../../models/user/User.js';  
 import bcrypt from 'bcryptjs';
+
 // Obtener perfil de usuario
- const perfil = async (req, res) => {
+const perfil = async (req, res) => {
   try {
-    const userId = req.user.id; // `req.user` debería estar disponible si el middleware `isAuthenticated` lo establece
+    const userId = req.user.id; 
 
     const user = await User.findByPk(userId);  
 
@@ -15,7 +16,8 @@ import bcrypt from 'bcryptjs';
       id: user.id,
       nombre: user.nombre,
       email: user.email,
-      // Otros campos del perfil
+      avatar: user.avatar || null,
+      puntos: user.puntos || 0
     });
   } catch (error) {
     console.error(error);
@@ -27,7 +29,7 @@ import bcrypt from 'bcryptjs';
 const updatePerfil = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { nombre, email, password } = req.body;
+    const { nombre, email, password, avatar } = req.body; // ✅ Añadir avatar
 
     if (!nombre || !email) {
       return res.status(400).json({ message: 'El nombre y el email son obligatorios' });
@@ -41,6 +43,11 @@ const updatePerfil = async (req, res) => {
 
     user.nombre = nombre;
     user.email = email;
+
+    if (avatar) {
+      user.avatar = avatar; // ✅ Guardar nuevo avatar
+    }
+
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
       user.password = hashedPassword;
@@ -55,9 +62,8 @@ const updatePerfil = async (req, res) => {
   }
 };
 
-
 // Eliminar cuenta de usuario
- const deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
     const userId = req.user.id;
 
@@ -79,5 +85,5 @@ const updatePerfil = async (req, res) => {
 export default {
   perfil,
   updatePerfil,
-  deleteUser
+  deleteUser,
 };

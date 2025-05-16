@@ -45,6 +45,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(20),
     defaultValue: 'user',
   },
+  avatar: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  puntos: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  },
 }, {
   tableName: 'usuarios', 
   timestamps: false,     

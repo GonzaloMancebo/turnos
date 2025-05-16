@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Alert, ScrollView, SafeAreaView } from 'react-native';
 import { useUser } from '../components/UserContext';
-import { obtenerReservasPorUsuario } from '../services/reservas/reservaService'; // Importamos solo la función de obtener
-import BotonCancelarReserva from '../components/BotonCancelarReserva'; // El botón se encarga de la cancelación
+import { obtenerReservasPorUsuario } from '../services/reservas/reservaService';
+import BotonCancelarReserva from '../components/BotonCancelarReserva';
 import styles from '../../styles/MisClasesStyles';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function TimelapScreen() {
   const { id, token } = useUser();
-  const [reservas, setReservas] = useState<Reserva[]>([]);  
+  const [reservas, setReservas] = useState<Reserva[]>([]);
   const [cargando, setCargando] = useState(true);
 
   interface Turno {
@@ -23,41 +24,61 @@ export default function TimelapScreen() {
     turno: Turno;
   }
 
-  // Obtener las reservas del usuario cuando se monta el componente
-  useEffect(() => {
-    const obtenerReservas = async () => {
-      try {
-        const reservasDelUsuario = await obtenerReservasPorUsuario(id, token);
-        setReservas(reservasDelUsuario);
-      } catch  {
-        Alert.alert('Error', 'No se pudieron cargar las reservas');
-      } finally {
-        setCargando(false);
-      }
-    };
+  // Recarga las reservas cada vez que la pantalla recibe foco
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true; // Para evitar actualizar estado si la pantalla se desenfoca rápido
 
-    obtenerReservas();
-  }, [id, token]);
+      const obtenerReservas = async () => {
+        setCargando(true);
+        try {
+          const reservasDelUsuario = await obtenerReservasPorUsuario(id, token);
+          if (isActive) setReservas(reservasDelUsuario);
+        } catch {
+          if (isActive) Alert.alert('Error', 'No se pudieron cargar las reservas');
+        } finally {
+          if (isActive) setCargando(false);
+        }
+      };
 
-  // Agrupar reservas por fecha
+      obtenerReservas();
+
+      return () => {
+        isActive = false; // Cleanup
+      };
+    }, [id, token])
+  );
+
   const reservasPorFecha = reservas.reduce((acc, reserva) => {
     const fecha = reserva.turno.fecha;
     if (!acc[fecha]) acc[fecha] = [];
     acc[fecha].push(reserva);
     return acc;
-  }, {} as Record<string, Reserva[]>);  // Ahora usamos el tipo correcto
+  }, {} as Record<string, Reserva[]>);
 
-  // Función para formatear la fecha
-  const formatearFecha = (fecha: string) => {
-    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const date = new Date(fecha);
-    return date.toLocaleDateString('es-ES', opciones);  // Formato en español
-  };
+const formatearFecha = (fecha: string) => {
+  const [anio, mes, dia] = fecha.split('-').map(Number);
+  // Crear Date sin UTC para usar zona horaria local
+  const date = new Date(anio, mes - 1, dia);
+  const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' } as const;
+  return date.toLocaleDateString('es-ES', opciones);
+};
+
 
   if (cargando) {
     return (
       <View style={styles.container}>
         <Text>Cargando...</Text>
+      </View>
+    );
+  }
+
+  if (reservas.length === 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ fontSize: 18, color: '#666', fontStyle: 'italic' }}>
+          No tienes reservas por el momento
+        </Text>
       </View>
     );
   }
@@ -68,17 +89,16 @@ export default function TimelapScreen() {
         {Object.keys(reservasPorFecha).sort().map((fecha) => (
           <View key={fecha} style={{ marginBottom: 20 }}>
             <Text style={styles.fechaTitulo}>{formatearFecha(fecha)}</Text>
-            {reservasPorFecha[fecha].map((item: Reserva) => ( 
+            {reservasPorFecha[fecha].map((item: Reserva) => (
               <View key={item.id} style={styles.slotItem}>
                 <View style={styles.filaClase}>
                   <Text style={styles.horaTexto}>
                     {item.turno.hora_inicio} - {item.turno.hora_fin}
                   </Text>
-                  {/* Botón para cancelar la reserva, el componente se encarga de la lógica */}
                   <BotonCancelarReserva
                     reservaId={item.turno.id}
                     cuposDisponibles={item.turno.cupo_maximo}
-                    onCancelacionExitosa={() => 
+                    onCancelacionExitosa={() =>
                       setReservas((prev) => prev.filter((reserva) => reserva.id !== item.id))
                     }
                   />

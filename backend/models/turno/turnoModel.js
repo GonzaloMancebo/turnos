@@ -16,7 +16,7 @@ const Turno = sequelize.define('Turno', {
     allowNull: false,
   },
   fecha: {
-    type: DataTypes.DATEONLY,
+  type: DataTypes.STRING(10), 
     allowNull: false,
   },
   cupo_maximo: {
@@ -24,11 +24,7 @@ const Turno = sequelize.define('Turno', {
     allowNull: false,
   },
 
-  ya_reservado: {
-  type: DataTypes.BOOLEAN,
-  allowNull: false,
-  defaultValue: false,
-},
+
   clase_id: {
     type: DataTypes.INTEGER,
     allowNull: false,

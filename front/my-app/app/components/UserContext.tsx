@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+// contexts/UserContext.tsx
+import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -17,7 +18,6 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [email, setEmail] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
 
-  // Cargar el token desde AsyncStorage cuando el componente se monte
   useEffect(() => {
     const loadUserFromStorage = async () => {
       const storedToken = await AsyncStorage.getItem('jwt_token');
@@ -25,24 +25,19 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(storedToken);
       }
     };
-
     loadUserFromStorage();
-  }, []); // Se ejecuta solo cuando el componente se monta
+  }, []);
 
   const setUser = (newToken: string) => {
     setToken(newToken);
-
     const decodedToken: any = jwtDecode(newToken);
-    const decodedEmail = decodedToken.email;
-    const decodedId = decodedToken.id || decodedToken.userId || decodedToken._id;
-
-    setEmail(decodedEmail);
-    setId(decodedId);
+    setEmail(decodedToken.email);
+    setId(decodedToken.id || decodedToken.userId || decodedToken._id);
 
     console.log("Contexto actualizado:", {
       token: newToken,
-      email: decodedEmail,
-      id: decodedId,
+      email: decodedToken.email,
+      id: decodedToken.id || decodedToken.userId || decodedToken._id,
     });
   };
 
@@ -50,6 +45,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setToken(null);
     setEmail(null);
     setId(null);
+    AsyncStorage.removeItem('jwt_token');
   };
 
   return (
